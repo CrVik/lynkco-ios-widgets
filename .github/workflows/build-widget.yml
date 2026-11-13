@@ -1,0 +1,37 @@
+name: Build unsigned iPhone widgets
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, "codex/widgets-*"]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Prepare Xcode project
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
+          xcodegen generate --spec project.yml
+      - name: Build iOS extension
+        run: >-
+          xcodebuild -project LynkCarWidgets.xcodeproj
+          -scheme LynkCarWidgets -configuration Release
+          -destination 'generic/platform=iOS' -derivedDataPath build
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Package unsigned extension
+        run: |
+          mkdir -p artifact
+          cp -R build/Build/Products/Release-iphoneos/LynkCarWidgets.appex artifact/
+          cp Widget/LynkCarWidgets.entitlements artifact/Signing.entitlements
+          python3 verify_extension.py artifact/LynkCarWidgets.appex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lynk-car-widgets-unsigned
+          path: artifact/
+          retention-days: 7
+          if-no-files-found: error
