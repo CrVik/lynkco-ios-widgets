@@ -16,4 +16,8 @@ Build with the included GitHub Actions workflow, or generate the project using
 XcodeGen and build the LynkCarWidgets scheme for a generic iOS device in Xcode.
 The bridge from the containing app and final IPA packaging are maintained locally.
 
-Status: source prepared; compilation and iPhone installation not yet verified.
+The first build compiled successfully and the widgets registered on an iPhone.
+The current revision fixes shared-container selection after the containing app
+is re-signed, and tests the reader with an overridden legacy bundle identifier.
+It also improves text contrast on the Home Screen. Data display with this revision
+still needs verification on the owner's iPhone.

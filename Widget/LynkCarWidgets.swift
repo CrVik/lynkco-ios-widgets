@@ -2,39 +2,6 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-struct CarSnapshot: Decodable {
-    let schemaVersion: Int
-    let statusTime: Double
-    let batteryPercent: Double?
-    let totalRangeKm: Double?
-    let electricRangeKm: Double?
-    let fuelLitres: Double?
-    let cabinTemp: Double?
-    let outsideTemp: Double?
-
-    var date: Date { Date(timeIntervalSince1970: statusTime / 1_000) }
-
-    static func read() -> CarSnapshot? {
-        let own = Bundle.main.bundleURL
-        let host = Bundle(url: own.deletingLastPathComponent().deletingLastPathComponent())
-        var groups: [String] = []
-        if let identifier = host?.bundleIdentifier { groups.append("group." + identifier) }
-        if let configured = Bundle.main.object(forInfoDictionaryKey: "LynkWidgetAppGroup") as? String {
-            groups.append(configured)
-        }
-        for group in Array(Set(groups)).sorted() {
-            guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group),
-                  let data = try? Data(contentsOf: container.appendingPathComponent("LynkCarWidgetSnapshot.json")),
-                  data.count <= 4_096,
-                  let snapshot = try? JSONDecoder().decode(CarSnapshot.self, from: data),
-                  snapshot.schemaVersion == 1,
-                  snapshot.statusTime.isFinite, snapshot.statusTime > 0 else { continue }
-            return snapshot
-        }
-        return nil
-    }
-}
-
 struct CarEntry: TimelineEntry {
     let date: Date
     let snapshot: CarSnapshot?
@@ -111,6 +78,8 @@ struct CarWidgetView: View {
                 .lineLimit(1).minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .foregroundStyle(.white)
+        .environment(\.colorScheme, .dark)
     }
 
     private func temperature(_ title: String, _ temperature: String) -> some View {
