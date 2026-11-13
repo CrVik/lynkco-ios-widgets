@@ -48,6 +48,60 @@ struct CarWidgetView: View {
     }
 
     private var home: some View {
+        Group {
+            if family == .systemSmall { smallHome } else { controlHome }
+        }
+        .foregroundStyle(.white)
+        .environment(\.colorScheme, .dark)
+    }
+
+    private var controlHome: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 5) {
+                Image(systemName: "car.side.fill").foregroundStyle(accent)
+                Text("Lynk & Co").fontWeight(.semibold)
+                Spacer(minLength: 4)
+                Text(dataTime).font(.system(size: 9)).foregroundStyle(.secondary)
+                    .lineLimit(1).minimumScaleFactor(0.8)
+            }.font(.system(size: 11))
+            HStack(alignment: .firstTextBaseline) {
+                Text(range).font(.system(size: 29, weight: .bold, design: .rounded))
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                Spacer(minLength: 5)
+                Label(battery, systemImage: "bolt.fill")
+                    .font(.system(size: 22, weight: .semibold, design: .rounded)).foregroundStyle(accent)
+            }
+            HStack(spacing: 4) {
+                Text(value(state?.electricRangeKm, suffix: " км") + " · " + value(state?.fuelLitres, suffix: " л"))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 2)
+                Text("Салон " + inside + " · Улица " + outside)
+            }.font(.system(size: 10)).lineLimit(1).minimumScaleFactor(0.7)
+            HStack(spacing: 6) {
+                ForEach(WidgetControl.allCases, id: \.rawValue) { control in
+                    if let url = control.url(token: state?.actionToken) {
+                        Link(destination: url) { controlLabel(control, enabled: true) }
+                    } else {
+                        controlLabel(control, enabled: false)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    private func controlLabel(_ control: WidgetControl, enabled: Bool) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: control.symbol).font(.system(size: 17, weight: .medium))
+            Text(control.title).font(.system(size: 9, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(enabled ? accent : .gray)
+        .frame(maxWidth: .infinity).frame(height: 42)
+        .background(RoundedRectangle(cornerRadius: 9).fill(Color.white.opacity(enabled ? 0.08 : 0.04)))
+        .accessibilityLabel(control.title)
+    }
+
+    private var smallHome: some View {
         VStack(alignment: .leading, spacing: family == .systemSmall ? 5 : 9) {
             HStack(spacing: 6) {
                 Image(systemName: "car.side.fill").foregroundStyle(accent)
@@ -131,7 +185,7 @@ struct CarStatusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CarProvider()) { entry in CarWidgetView(entry: entry) }
             .configurationDisplayName("Lynk & Co — автомобиль")
-            .description("Заряд, запас хода, температуры и время данных автомобиля.")
+            .description("Показания автомобиля и четыре кнопки управления в среднем виджете.")
             .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }

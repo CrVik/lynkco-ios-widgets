@@ -19,7 +19,7 @@ jobs:
           xcodegen generate --spec project.yml
       - name: Test snapshot reader and signed host ID resolution
         run: |
-          swiftc Widget/CarSnapshot.swift Tests/main.swift -o build-snapshot-tests
+          swiftc Widget/CarSnapshot.swift Widget/WidgetControl.swift Tests/main.swift -o build-snapshot-tests
           ./build-snapshot-tests
       - name: Build iOS extension
         run: >-

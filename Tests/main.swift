@@ -29,4 +29,17 @@ check(CarSnapshot.decode(Data(#"{"schemaVersion":2,"statusTime":1700000000000}"#
 check(CarSnapshot.decode(Data(#"{"schemaVersion":1,"statusTime":1700000000}"#.utf8)) == nil, "Reject seconds in place of milliseconds")
 check(CarSnapshot.decode(Data(#"{"schemaVersion":1,"statusTime":1700000000000,"batteryPercent":"42"}"#.utf8)) == nil, "Reject a malformed host snapshot")
 check(CarSnapshot.decode(Data(repeating: 32, count: 4097)) == nil, "Reject oversized input")
+check(decoded?.actionToken == nil, "Old snapshots remain readable without action buttons")
+let token = String(repeating: "a", count: 64)
+for control in WidgetControl.allCases {
+    let url = control.url(token: token)
+    let components = url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
+    check(components?.scheme == "lynkruwidget", "Open the modified app's dedicated scheme")
+    check(components?.host == "control" && components?.path == "/" + control.rawValue, "Use an explicit allowlisted action")
+    check(components?.queryItems == [URLQueryItem(name: "token", value: token)], "Include only the opaque local token")
+    check(control.url(token: nil) == nil, "No controls before the app prepares a token")
+    check(control.url(token: "invalid") == nil, "Reject incomplete tokens")
+    check(control.url(token: String(repeating: "G", count: 64)) == nil, "Reject malformed token characters")
+}
+check(WidgetControl(rawValue: "engine") == nil, "No engine action")
 print("Snapshot reader: \(count) checks passed")

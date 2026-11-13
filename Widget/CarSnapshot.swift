@@ -9,6 +9,7 @@ struct CarSnapshot: Decodable {
     let fuelLitres: Double?
     let cabinTemp: Double?
     let outsideTemp: Double?
+    let actionToken: String?
 
     var date: Date { Date(timeIntervalSince1970: statusTime / 1_000) }
 

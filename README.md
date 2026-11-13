@@ -16,8 +16,12 @@ Build with the included GitHub Actions workflow, or generate the project using
 XcodeGen and build the LynkCarWidgets scheme for a generic iOS device in Xcode.
 The bridge from the containing app and final IPA packaging are maintained locally.
 
-The first build compiled successfully and the widgets registered on an iPhone.
-The current revision fixes shared-container selection after the containing app
-is re-signed, and tests the reader with an overridden legacy bundle identifier.
-It also improves text contrast on the Home Screen. Data display with this revision
-still needs verification on the owner's iPhone.
+The shared-container fix was confirmed working on the owner's iPhone.
+The medium Home Screen widget now adds four links: locks, trunk, cabin warming,
+and flashing lights. Links open the containing app using an opaque local token;
+all command handling remains in the locally integrated native app module.
+Locks and trunk require an action confirmation in the app. Warming and lights
+are requested after the app becomes ready, without a second tap. This extension
+still has no network client or vehicle-command implementation of its own.
+The small and Lock Screen widgets retain their status-only layouts.
+The new command controls require on-device verification after installation.
